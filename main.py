@@ -40,7 +40,7 @@ homeScreen.blit(lightSurf[0], lightSurf[1])
 
 # Show default GUI
 pygame.display.init()
-screen = pygame.display.set_mode(size=(WIDTH, HEIGHT)) # TODO: colordepth for display?
+screen = pygame.display.set_mode((WIDTH, HEIGHT)) # TODO: colordepth for display?
 screen.blit(homeScreen, (0,0))
 pygame.display.flip()
 
