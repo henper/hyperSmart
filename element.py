@@ -22,13 +22,21 @@ class Element:
         self.surf = image.frombuffer(buf, self.rect.size, 'RGBA')
 
         # make a mini version for activation state
-        buf = rasterizer.rasterize(svg, width, height, scale * 0.9) # TODO: add tx, ty for offset
+        buf = rasterizer.rasterize(svg, width, height, scale * 0.9, tx = 0.05*width, ty =0.05*height)
         self.surfPressed = image.frombuffer(buf, self.rect.size, 'RGBA')
 
-    def setSurface(self, surf):
-        self.surf = surf
-    def setSurfacePressed(self, surf):
-        self.surfPressed = surf
-    def setSurfaces(self, surfs):
-        self.surf = surfs[0]
-        self.surfPressed = surfs[1]
+    def setAction(self, callback):
+        self.callback = callback
+
+    def draw(self, canvas, pressed=False):
+        try:
+            canvas.fill((0,0,0,0), rect=self.rect) # blank area
+
+            if pressed :
+                canvas.blit(self.surfPressed, self.rect.topleft)
+            else:
+                canvas.blit(self.surf, self.rect.topleft)
+            
+        except AttributeError:
+            pass # happens when caller attempts to draw an element without setting graphics
+             

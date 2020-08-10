@@ -14,32 +14,33 @@ COLORDEPTH = 18
 REFRESHRATE = 60
 PPI = '254in'
 
-def offset(tup, offset):
-    return tuple(map(lambda x: x + int(offset), tup))
+def toggleHueLight(id=1):
+    state = hue.get_light(id)['state']['on']
+    state = not state
+    hue.set_light(id, 'on', state)
 
 # Connect to Philips Hue Bridge
 hue = PhilipsHueBridge()
 hue.connect()
 
 # Build the default GUI
-homeScreen = pygame.Surface((WIDTH, HEIGHT))
-homeScreen.fill((0,0,0,0))
-
-#(grid, size) = createGrid(3)
 grid = Grid(3,3, WIDTH, HEIGHT)
 
 grid.elem[0][0].setGraphics('icons/lightLinealGradient.svg')
-grid.elem[1][1].setGraphics('icons/lightLinealGradient.svg')
+grid.elem[0][0].setAction(toggleHueLight)
+
+grid.elem[0][1].setGraphics('icons/lightLinealGradient.svg')
 grid.elem[2][2].setGraphics('icons/gearLinealGradient.svg')
 
-homeScreen.blit(grid.elem[0][0].surf, grid.elem[0][0].rect.topleft)
-homeScreen.blit(grid.elem[1][1].surf, grid.elem[1][1].rect.topleft)
-homeScreen.blit(grid.elem[2][2].surf, grid.elem[2][2].rect.topleft)
+
 
 # Show default GUI
 pygame.display.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT)) # TODO: colordepth for display?
-screen.blit(homeScreen, (0,0))
+
+for elem in grid.elems:
+    elem.draw(screen)
+
 pygame.display.flip()
 
 
@@ -53,9 +54,7 @@ while True:
         elem = grid.getElement(event.pos)
 
         try:
-            # update graphics to pressed state
-            screen.fill((0,0,0,0), rect=elem.rect)
-            screen.blit(elem.surfPressed, elem.rect.topleft)
+            elem.draw(screen, pressed=True)
             pygame.display.update()
 
         except AttributeError:
@@ -66,16 +65,16 @@ while True:
     if event.type == pygame.MOUSEBUTTONUP:
 
         try:
-
             # restore graphics
-            screen.fill((0,0,0,0), rect=elem.rect)
-            screen.blit(elem.surf, elem.rect.topleft)
+            elem.draw(screen)
             pygame.display.update()
 
             # perform action
-            state = hue.get_light(1)['state']['on']
-            state = not state
-            hue.set_light(1, 'on', state)
+            elem.callback()
+
+            # state = hue.get_light(1)['state']['on']
+            # state = not state
+            # hue.set_light(1, 'on', state)
 
         except AttributeError:
             pass # user pressed an empty cell
