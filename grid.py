@@ -6,12 +6,12 @@ Class to create and store a grid pattern of generic dimensions
     Given click event positions, determine which element should be activated.
     
 '''
-from element import Element
+from element import Element, Icon
 
 def checkEvenDivisor(length, div):
     if length % div != 0:
         raise ValueError(f'{len} is divisable by almost everything but not by {div}, try again!')
-  
+
 class Grid:
     def __init__(self, divx, divy, width, height):
         # store properties of the display surface 
@@ -43,5 +43,33 @@ class Grid:
     def getElement(self, click=(0,0)):
         for elem in self.elems:
             if elem.rect.collidepoint(click):
-                return elem
+                yrel = elem.rect.bottom - click[1]
+                yrate = float(yrel) / elem.rect.height
+                return elem, yrate
         return None
+
+    def setElement(self, x, y, element):
+        # typically there is always a existing element at every grid position
+        
+        # replace in iterable
+        deprecated = self.elem[x][y]
+        index = self.elems.index(deprecated)
+        self.elems.pop(index)
+        self.elems.append(element)
+
+        # replace in grid
+        self.elem[x][y] = element
+
+    def setIcon(self, x, y, svg):
+        # get a hold of the element we're going to destroy
+        deprecated = self.elem[x][y]
+
+        # extract the important bits
+        position = deprecated.rect.topleft
+        size = deprecated.rect.size
+        
+        # create an icon and with that, a brand spanking new element
+        icon = Icon(position, size, svg)
+
+        # replace the references of the old element in the grid with the new
+        self.setElement(x, y, icon)

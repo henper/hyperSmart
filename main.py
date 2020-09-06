@@ -19,9 +19,11 @@ hue = PhilipsHueBridge()
 hue.connect()
 
 # Connect to Xiomei devices
-fan = FanZA3('192.168.88.232', open('tokens/zhimi-fan-za3_mibtFDE2.ascii', 'r').readline())
-fanStatus = fan.status() # FIXME: this takes a while, do in separate process?
-fanState = fanStatus.power
+#fan = FanZA3('192.168.88.232', open('tokens/zhimi-fan-za3_mibtFDE2.ascii', 'r').readline())
+#fanStatus = fan.status() # FIXME: this takes a second or two, do in separate process?
+# speed, direct_speed, natural_speed, angle, oscillate,
+#fanState = fanStatus.power
+fanState = 'off'
 
 # Actions
 def toggleHueLight(id=1):
@@ -42,25 +44,31 @@ def toggleFan():
 # Build the default GUI
 grid = Grid(3,3, WIDTH, HEIGHT)
 
-grid.elem[0][0].setGraphics('icons/lightLinealGradient.svg')
+#grid.elem[0][0].setGraphics('icons/wifiLightLinealGradient.svg')
+grid.setIcon(0,0, 'icons/wifiLightLinealGradient.svg')
 grid.elem[0][0].setAction(toggleHueLight)
 
 grid.elem[0][1].setGraphics('icons/coolingFanLinealGradient.svg')
 grid.elem[0][1].setAction(toggleFan)
 
-grid.elem[2][2].setGraphics('icons/gearLinealGradient.svg')
+#grid.elem[2][2].setGraphics('icons/gearLinealGradient.svg')
 
-
+grid.elem[2][1].setSlider(0.5)
 
 # Show default GUI
-pygame.display.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT)) # TODO: colordepth for display?
+try:
+    pygame.display.init()
+except:
+    print('No display device found')
+    quit()
+
+pygame.mouse.set_visible(False)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 for elem in grid.elems:
     elem.draw(screen)
 
 pygame.display.flip()
-
 
 elem = None # keep track of activated element
 while True:
@@ -69,10 +77,10 @@ while True:
     if event.type == pygame.MOUSEBUTTONDOWN:
 
         # determine which element was activated
-        elem = grid.getElement(event.pos)
+        elem, yrate = grid.getElement(event.pos)
 
         try:
-            elem.draw(screen, pressed=True)
+            elem.draw(screen, pressed=True, yrate=yrate)
             pygame.display.update()
 
         except AttributeError:
@@ -90,16 +98,15 @@ while True:
             # perform action
             elem.callback()
 
-            # state = hue.get_light(1)['state']['on']
-            # state = not state
-            # hue.set_light(1, 'on', state)
-
         except AttributeError:
             pass # user pressed an empty cell
 
         continue
 
-    if event.type == pygame.QUIT:
+    # Allow for ways to exit the application
+    if event.type == pygame.QUIT: # closing the (proverbial) window
+        break
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL:
         break
 
 pygame.quit()
