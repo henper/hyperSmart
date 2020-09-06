@@ -6,7 +6,7 @@ Class to create and store a grid pattern of generic dimensions
     Given click event positions, determine which element should be activated.
     
 '''
-from element import Element, Icon
+from element import *
 
 def checkEvenDivisor(length, div):
     if length % div != 0:
@@ -73,3 +73,17 @@ class Grid:
 
         # replace the references of the old element in the grid with the new
         self.setElement(x, y, icon)
+
+    def setSlider(self, x, y, ratio):
+        # get a hold of the element we're going to destroy
+        deprecated = self.elem[x][y]
+
+        # extract the important bits
+        position = deprecated.rect.topleft
+        size = deprecated.rect.size
+
+        # create a slider and with that, a brand spanking new element
+        slider = Slider(position, size, ratio)
+
+        # replace the references of the old element in the grid with the new
+        self.setElement(x, y, slider)

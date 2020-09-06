@@ -26,7 +26,8 @@ hue.connect()
 fanState = 'off'
 
 # Actions
-def toggleHueLight(id=1):
+def toggleHueLight(**kwargs):
+    id = 1
     state = hue.get_light(id)['state']['on']
     state = not state
     hue.set_light(id, 'on', state)
@@ -36,24 +37,22 @@ def toggleFan():
     global fanState
     if fanState == 'on':
         fanState = 'off'
-        fan.off()
+        #fan.off()
     else:
         fanState = 'on'
-        fan.on()
+        #fan.on()
 
 # Build the default GUI
 grid = Grid(3,3, WIDTH, HEIGHT)
 
-#grid.elem[0][0].setGraphics('icons/wifiLightLinealGradient.svg')
 grid.setIcon(0,0, 'icons/wifiLightLinealGradient.svg')
-grid.elem[0][0].setAction(toggleHueLight)
+grid.elem[0][0].setReleaseAction(toggleHueLight)
 
-grid.elem[0][1].setGraphics('icons/coolingFanLinealGradient.svg')
-grid.elem[0][1].setAction(toggleFan)
+grid.setIcon(0,1, 'icons/coolingFanLinealGradient.svg')
+grid.elem[0][1].setReleaseAction(toggleFan)
 
-#grid.elem[2][2].setGraphics('icons/gearLinealGradient.svg')
-
-grid.elem[2][1].setSlider(0.5)
+#grid.elem[2][1].setSlider(0.5)
+grid.setSlider(2,1, 0.01)
 
 # Show default GUI
 try:
@@ -70,37 +69,27 @@ for elem in grid.elems:
 
 pygame.display.flip()
 
-elem = None # keep track of activated element
 while True:
     event = pygame.event.wait() # sleep until the user acts
 
-    if event.type == pygame.MOUSEBUTTONDOWN:
-
+    if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
         # determine which element was activated
         elem, yrate = grid.getElement(event.pos)
-
         try:
-            elem.draw(screen, pressed=True, yrate=yrate)
+            elem.onTouch(canvas=screen, yrate=yrate)
             pygame.display.update()
-
         except AttributeError:
             pass # user pressed an empty cell
-
         continue
 
     if event.type == pygame.MOUSEBUTTONUP:
-
-        try:
-            # restore graphics
-            elem.draw(screen)
+        # determine which element was activated
+        elem, yrate = grid.getElement(event.pos)
+        try:            
+            elem.onRelease(canvas=screen)
             pygame.display.update()
-
-            # perform action
-            elem.callback()
-
         except AttributeError:
             pass # user pressed an empty cell
-
         continue
 
     # Allow for ways to exit the application
