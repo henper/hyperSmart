@@ -1,7 +1,7 @@
 '''
 Storage container for a grapical element in the grid
 '''
-from pygame import Rect, image, Surface
+from pygame import Rect, image, Surface, font
 from svg import Parser, Rasterizer # pynanosvg, depends on Cython
 
 rasterizer = Rasterizer()
@@ -106,3 +106,15 @@ class Slider(Element):
     def onTouch(self, **kwargs):
         self.setSlider(kwargs['yrate'])
         self.draw(kwargs['canvas'])
+
+class TextBox(Element):
+    def __init__(self, pos, size, text):
+        super().__init__(pos, size)
+
+        aa = True
+        fg = TEAL
+        bg = BLACK
+        
+        font.init() # perhaps not spectacular to init the font system here but should be safe to do again and again
+        abel = font.Font('fonts/abel/Abel-Regular.ttf', int(self.rect.height*0.75))
+        self.surf = abel.render(text, aa, fg, bg)

@@ -87,3 +87,17 @@ class Grid:
 
         # replace the references of the old element in the grid with the new
         self.setElement(x, y, slider)
+
+    def setTextBox(self, x, y, ratio):
+        # get a hold of the element we're going to destroy
+        deprecated = self.elem[x][y]
+
+        # extract the important bits
+        position = deprecated.rect.topleft
+        size = deprecated.rect.size
+
+        # create a Text-box and with that, a brand spanking new element
+        tbox = TextBox(position, size, ratio)
+
+        # replace the references of the old element in the grid with the new
+        self.setElement(x, y, tbox)

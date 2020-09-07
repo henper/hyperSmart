@@ -51,8 +51,8 @@ grid.elem[0][0].setReleaseAction(toggleHueLight)
 grid.setIcon(0,1, 'icons/coolingFanLinealGradient.svg')
 grid.elem[0][1].setReleaseAction(toggleFan)
 
-#grid.elem[2][1].setSlider(0.5)
 grid.setSlider(2,1, 0.01)
+grid.setTextBox(2,2,'text')
 
 # Show default GUI
 try:
