@@ -26,14 +26,19 @@ hue.connect()
 fanState = 'off'
 
 # Actions
-def toggleHueLight(**kwargs):
+def toggleHueLight(element):
     id = 1
     state = hue.get_light(id)['state']['on']
     state = not state
     hue.set_light(id, 'on', state)
 
+    if state:
+        element.highlight()
+    else:
+        element.mute()
 
-def toggleFan():
+
+def toggleFan(element):
     global fanState
     if fanState == 'on':
         fanState = 'off'
@@ -61,7 +66,7 @@ except:
     print('No display device found')
     quit()
 
-pygame.mouse.set_visible(False)
+pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 for elem in grid.elems:

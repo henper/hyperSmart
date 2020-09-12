@@ -2,6 +2,7 @@
 Storage container for a grapical element in the grid
 '''
 from pygame import Rect, image, Surface, font
+from pygame import SRCALPHA, BLEND_RGBA_MULT
 from svg import Parser, Rasterizer # pynanosvg, depends on Cython
 
 rasterizer = Rasterizer()
@@ -9,27 +10,52 @@ rasterizer = Rasterizer()
 BLACK = (0,0,0,0)
 TEAL = (20, 217, 210)
 
+# Helper function to put a transparancy filter on top of any surface, alpha between 0 and 1.0
+def setSurfaceOpacity(surf, alpha):
+    if alpha >= 1.0:
+        return
+
+    alphaLaval = int(alpha*255)
+    #self.surf.set_alpha(alphaLaval) TODO: this might be enough on pygame 2.0 but prev. releases do not support combining per-surface and per-pixel alphas
+    surf.convert_alpha()
+    overlay = Surface(surf.get_rect().size, SRCALPHA)
+    overlay.fill((255,255,255,alphaLaval))
+    surf.blit(overlay, (0,0), special_flags=BLEND_RGBA_MULT)
+
 # Base class for individual grid elements
 class Element:
     def __init__(self, pos, size):
         self.rect = Rect(pos, size)
+        self.opacity = 1.0
 
     def setTouchAction(self, callback):
         self.touchCallback = callback
 
     def onTouch(self, **kwargs):
-        self.touchCallback()
+        self.touchCallback(self)
 
     def setReleaseAction(self, callback):
         self.releaseCallback = callback
 
     def onRelease(self, **kwargs):
-        self.releaseCallback()
+        self.releaseCallback(self)
+
+    def highlight(self):
+        self.opacity = 1.0
+
+    def mute(self):
+        self.opacity = 0.5
 
     def draw(self, canvas):
         try:
+            if self.opacity < 1.0:
+                surf = self.surf.copy() # apply opacity filter on a copy of the surface so that subsequent draws do not mute into oblivion
+                setSurfaceOpacity(surf, self.opacity)
+            else:
+                surf = self.surf
+
             canvas.fill(BLACK, rect=self.rect) # blank area
-            canvas.blit(self.surf, self.rect.topleft)
+            canvas.blit(surf, self.rect.topleft)
         except AttributeError:
             pass # happens when caller attempts to draw an element without setting a derived class
 
@@ -62,22 +88,27 @@ class Icon(Element):
     def onTouch(self, **kwargs):
         # change the icon state to show the pressed (scaled down) version
         self.surf = self.surfPressed
-        self.draw(kwargs['canvas'])
 
         try:
             super().onTouch()
-        except AttributeError:
+        except AttributeError as err:
             pass # no on touch callback defined for element
+
+        # draw after the super call to allow further modification of the surface
+        self.draw(kwargs['canvas'])
 
     def onRelease(self, **kwargs):
         # change the icon state to show the pressed (scaled down) version
         self.surf = self.surfDefault
-        self.draw(kwargs['canvas'])
 
         try:
             super().onRelease()
-        except AttributeError:
+        except AttributeError as err:
+            self.logger.warn(err.msg)
             pass # no on touch callback defined for element
+
+        # draw after the super call to allow further modification of the surface
+        self.draw(kwargs['canvas'])
 
 class Slider(Element):
     def __init__(self, pos, size, ratio):
@@ -106,6 +137,11 @@ class Slider(Element):
     def onTouch(self, **kwargs):
         self.setSlider(kwargs['yrate'])
         self.draw(kwargs['canvas'])
+
+        try:
+            super().onTouch()
+        except AttributeError:
+            pass # no on touch callback defined for element
 
 class TextBox(Element):
     def __init__(self, pos, size, text):
