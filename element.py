@@ -103,8 +103,7 @@ class Icon(Element):
 
         try:
             super().onRelease()
-        except AttributeError as err:
-            self.logger.warn(err.msg)
+        except AttributeError:
             pass # no on touch callback defined for element
 
         # draw after the super call to allow further modification of the surface

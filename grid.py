@@ -13,26 +13,29 @@ def checkEvenDivisor(length, div):
     if length % div != 0:
         raise ValueError(f'{len} is divisable by almost everything but not by {div}, try again!')
 
-class Grid:
-    def __init__(self, divx, divy, width, height):
-        # store properties of the display surface 
-        self.width = width
-        self.height = height
+class Grid(Element):
+    def __init__(self, divx, divy, size, pos = (0,0)):
+        super().__init__(pos, size)
 
-        # Create origin (top left corner) of each element        
+        x, y = pos
+        width, height = size   
+
+        # make sure it's all nice and neat, no errant pixels
         checkEvenDivisor(width,  divx)
         checkEvenDivisor(height, divy)
 
-        self.xlen = int(width  / divx)
-        self.ylen = int(height / divy)
+        # determine each element size
+        xlen = int(width  / divx)
+        ylen = int(height / divy)
+        size = (xlen, ylen)
 
+        # Create origin (top left corner) of each element
         self.elem = [] # store in grid positions
         for colIndex in range(divx):
             row = []
             #for colIndex in range(divx):
             for rowIndex in range(divy):
-                topleft = (colIndex * self.ylen, rowIndex * self.xlen)
-                size = (self.xlen, self.xlen)
+                topleft = (x + colIndex * xlen, y + rowIndex * ylen)
                 row.append(Element(topleft, size))
                 e = row.copy()
             row.clear()
@@ -41,6 +44,10 @@ class Grid:
         # flatten grid to a single list for easier iteration
         self.elems = []
         self.elems = [item for sublist in self.elem for item in sublist]
+    
+    def draw(self, canvas):
+        for elem in self.elems:
+            elem.draw(canvas)
 
     ''' Merge _adjacent_ elements
           coords : list of tuples with the x,y positions of all elements to be merge
@@ -81,6 +88,13 @@ class Grid:
             if elem.rect.collidepoint(click):
                 yrel = elem.rect.bottom - click[1]
                 yrate = float(yrel) / elem.rect.height
+
+                # account for inception
+                try:
+                    elem, yrate = elem.getElement(click)
+                except:
+                    pass
+                
                 return elem, yrate
         return None
 
@@ -141,3 +155,18 @@ class Grid:
 
         # replace the references of the old element in the grid with the new
         self.setElement(coord, tbox)
+
+    def setGrid(self, coord, divx, divy):
+        # get a hold of the element we're going to destroy
+        x, y = coord
+        deprecated = self.elem[x][y]
+
+        # extract the important bits
+        position = deprecated.rect.topleft
+        size = deprecated.rect.size
+
+        # create a Grid-within-grid and with that, a brand spanking new element
+        grid = Grid(divx, divy, size, position)
+
+        # replace the references of the old element in the grid with the new
+        self.setElement(coord, grid)

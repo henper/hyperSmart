@@ -48,7 +48,7 @@ def toggleFan(element):
         #fan.on()
 
 # Build the default GUI
-grid = Grid(3,3, WIDTH, HEIGHT)
+grid = Grid(3,3, (WIDTH, HEIGHT))
 
 grid.setIcon((0,0), 'icons/wifiLightLinealGradient.svg')
 grid.elem[0][0].setReleaseAction(toggleHueLight)
@@ -59,23 +59,23 @@ grid.elem[1][0].setReleaseAction(toggleFan)
 grid.mergeElements([(0,1), (0,2)])
 grid.setSlider((0,1), 0.01)
 
+grid.setGrid((2,0), 2, 2)
+inceptionGrid = grid.elem[2][0]
+inceptionGrid.setIcon((0,0), 'icons/wifiLightLinealGradient.svg')
+inceptionGrid.setIcon((0,1), 'icons/wifiLightLinealGradient.svg')
+inceptionGrid.setIcon((1,0), 'icons/wifiLightLinealGradient.svg')
+inceptionGrid.setIcon((1,1), 'icons/wifiLightLinealGradient.svg')
+
 grid.mergeElements([(1,2), (2,2)])
 grid.setTextBox((1,2),'text')
 
 # Show default GUI
-try:
-    pygame.display.init()
-except:
-    print('No display device found')
-    quit()
+pygame.display.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+grid.draw(screen)
+pygame.display.flip()
 
 pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
-for elem in grid.elems:
-    elem.draw(screen)
-
-pygame.display.flip()
 
 while True:
     event = pygame.event.wait() # sleep until the user acts
