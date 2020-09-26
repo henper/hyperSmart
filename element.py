@@ -34,11 +34,12 @@ class Element:
     def onTouch(self, **kwargs):
         self.touchCallback(self)
 
-    def setReleaseAction(self, callback):
+    def setReleaseAction(self, callback, arg=None):
         self.releaseCallback = callback
+        self.releaseCallbackArg = arg
 
     def onRelease(self, **kwargs):
-        self.releaseCallback(self)
+        self.releaseCallback(self, self.releaseCallbackArg)
 
     def highlight(self):
         self.opacity = 1.0

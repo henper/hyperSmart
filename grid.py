@@ -13,6 +13,50 @@ def checkEvenDivisor(length, div):
     if length % div != 0:
         raise ValueError(f'{len} is divisable by almost everything but not by {div}, try again!')
 
+def gridFactory(config, width, height):
+    divx, divy = tuple(config['divs'])
+    grid = Grid(divx, divy, (width, height))
+
+    try:
+        for merge in config['merges']:
+            coords = [tuple(l) for l in merge]
+            grid.mergeElements(coords)
+    except KeyError:
+        pass
+
+    for element in config['elements']:
+        pos = tuple(element['pos'])
+
+        # Decide on element type #FIXME: has to be done before setting other attributes as the original element will be destroyed upon setting type
+        try:
+            grid.setIcon(pos, element['icon'])
+        except KeyError:
+            pass
+
+        try:
+            grid.setSlider(pos, element['slider'])
+        except KeyError:
+            pass
+
+        try:
+            grid.setTextBox(pos, element['text'])
+        except KeyError:
+            pass
+
+        x,y = pos
+        # FIXME: replace locals() with getattr(<mod>, 'foo') by structuring actions in modules
+        try:
+            grid.elem[x][y].setTouchAction(locals()[element['touch']], element['id'])
+        except KeyError:
+            pass
+
+        try:
+            grid.elem[x][y].setReleaseAction(locals()[element['release']], element['id'])
+        except KeyError:
+            pass
+
+    return grid
+
 class Grid(Element):
     def __init__(self, divx, divy, size, pos = (0,0)):
         super().__init__(pos, size)
@@ -31,10 +75,9 @@ class Grid(Element):
 
         # Create origin (top left corner) of each element
         self.elem = [] # store in grid positions
-        for colIndex in range(divx):
+        for rowIndex in range(divy):
             row = []
-            #for colIndex in range(divx):
-            for rowIndex in range(divy):
+            for colIndex in range(divx):
                 topleft = (x + colIndex * xlen, y + rowIndex * ylen)
                 row.append(Element(topleft, size))
                 e = row.copy()

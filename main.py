@@ -1,11 +1,11 @@
 
 # external dependencies
-import pygame
+import pygame, yaml
 from phue import Bridge as PhilipsHueBridge
 from miio.fan import FanZA3
 
 # internal dependencies
-from grid import Grid
+from grid import Grid, gridFactory
 
 # HyperPixel Weirdly Square
 WIDTH = 720
@@ -26,11 +26,10 @@ hue.connect()
 fanState = 'off'
 
 # Actions
-def toggleHueLight(element):
-    id = 1
-    state = hue.get_light(id)['state']['on']
+def toggleHueLight(element, id):
+    state = hue.get_group(id)['state']['all_on']
     state = not state
-    hue.set_light(id, 'on', state)
+    hue.set_group(id, 'on', state)
 
     if state:
         element.highlight()
@@ -51,7 +50,7 @@ def toggleFan(element):
 grid = Grid(3,3, (WIDTH, HEIGHT))
 
 grid.setIcon((0,0), 'icons/wifiLightLinealGradient.svg')
-grid.elem[0][0].setReleaseAction(toggleHueLight)
+grid.elem[0][0].setReleaseAction(toggleHueLight, 2)
 
 grid.setIcon((1,0), 'icons/coolingFanLinealGradient.svg')
 grid.elem[1][0].setReleaseAction(toggleFan)
@@ -69,10 +68,16 @@ inceptionGrid.setIcon((1,1), 'icons/wifiLightLinealGradient.svg')
 grid.mergeElements([(1,2), (2,2)])
 grid.setTextBox((1,2),'text')
 
+homeScreen = grid
+
+# Import grids
+lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml')), WIDTH, HEIGHT)
+
 # Show default GUI
+activeGrid = lightGroupsGrid
 pygame.display.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-grid.draw(screen)
+activeGrid.draw(screen)
 pygame.display.flip()
 
 pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
@@ -82,7 +87,7 @@ while True:
 
     if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
         # determine which element was activated
-        elem, yrate = grid.getElement(event.pos)
+        elem, yrate = activeGrid.getElement(event.pos)
         try:
             elem.onTouch(canvas=screen, yrate=yrate)
             pygame.display.update()
@@ -92,7 +97,7 @@ while True:
 
     if event.type == pygame.MOUSEBUTTONUP:
         # determine which element was activated
-        elem, yrate = grid.getElement(event.pos)
+        elem, yrate = activeGrid.getElement(event.pos)
         try:            
             elem.onRelease(canvas=screen)
             pygame.display.update()
