@@ -13,6 +13,11 @@ pygame.display.flip()
 
 pygame.mouse.set_visible(False)
 
+minx = 65535
+maxx = 0
+miny = 65535
+maxy = 0
+
 while True:
     event = pygame.event.wait() # sleep until the user acts
 
@@ -21,6 +26,17 @@ while True:
         if raspberry:
             x,y = event.pos
             event.pos = (WIDTH-x, HEIGHT-y)
+
+        x, y = event.pos
+        if x > maxx:
+            maxx = x
+        if y > maxy:
+            maxy = y
+        if x < minx:
+            minx = x
+        if y < miny:
+            miny = y
+        
 
         screen.fill((0,0,0))
         pygame.draw.circle(screen, (255,255,255), event.pos, 10)
@@ -32,3 +48,5 @@ while True:
         break
     if event.type == pygame.KEYDOWN and event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL:
         break
+print(f'Min X = {minx}, Max X = {maxx}')
+print(f'Min Y = {miny}, Max Y = {maxy}')
