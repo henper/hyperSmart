@@ -8,6 +8,10 @@ from requests import post
 # internal dependencies
 from grid import Grid, gridFactory
 
+# FIXME: ugly hack for inverted touch-input on rasbian. Revist when on pygame 2.0
+from os import uname
+raspberry = uname()[4].startswith('arm')
+
 # HyperPixel Weirdly Square
 WIDTH = 720
 HEIGHT = 720
@@ -83,6 +87,11 @@ while True:
     event = pygame.event.wait() # sleep until the user acts
 
     if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
+
+        if raspberry:
+            x,y = event.pos
+            event.pos = (WIDTH-x, HEIGHT-y)
+
         # determine which element was activated
         elem, yrate = activeGrid.getElement(event.pos)
         try:
@@ -93,6 +102,11 @@ while True:
         continue
 
     if event.type == pygame.MOUSEBUTTONUP:
+
+        if raspberry:
+            x,y = event.pos
+            event.pos = (WIDTH-x, HEIGHT-y)
+
         # determine which element was activated
         elem, yrate = activeGrid.getElement(event.pos)
         try:            
