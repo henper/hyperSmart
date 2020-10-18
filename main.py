@@ -8,10 +8,6 @@ from requests import post
 # internal dependencies
 from grid import Grid, gridFactory
 
-# FIXME: ugly hack for inverted touch-input on rasbian. Revist when on pygame 2.0
-from os import uname
-raspberry = uname()[4].startswith('arm')
-
 # HyperPixel Weirdly Square
 WIDTH = 720
 HEIGHT = 720
@@ -65,6 +61,14 @@ def swingRight(element):
 def swingStop(element):
     post('http://192.168.88.229/multibrackets', data = 'ok')
 
+def getCoord(event):
+    coord = (0,0)
+    if event.type in [pygame.FINGERUP, pygame.FINGERDOWN, pygame.FINGERMOTION] :
+        coord = int(WIDTH * (1.0 - event.x)), int(HEIGHT * (1.0 - event.y))
+    elif event.type in [pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
+        coord = event.pos
+    return coord
+
 # Import grids
 actionLibrary = {'toggleHueLight': toggleHueLight,
                  'setHueLightBrightness': setHueLightBrightness,
@@ -83,17 +87,15 @@ pygame.display.flip()
 
 pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
 
+
+
 while True:
     event = pygame.event.wait() # sleep until the user acts
 
-    if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
-
-        if raspberry:
-            x,y = event.pos
-            event.pos = (WIDTH-x, HEIGHT-y)
+    if event.type in [pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN, pygame.FINGERMOTION] or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
 
         # determine which element was activated
-        elem, yrate = activeGrid.getElement(event.pos)
+        elem, yrate = activeGrid.getElement(getCoord(event))
         try:
             elem.onTouch(canvas=screen, yrate=yrate)
             pygame.display.update()
@@ -101,14 +103,10 @@ while True:
             pass # user pressed an empty cell
         continue
 
-    if event.type == pygame.MOUSEBUTTONUP:
-
-        if raspberry:
-            x,y = event.pos
-            event.pos = (WIDTH-x, HEIGHT-y)
+    if event.type in [pygame.MOUSEBUTTONUP, pygame.FINGERUP] :
 
         # determine which element was activated
-        elem, yrate = activeGrid.getElement(event.pos)
+        elem, yrate = activeGrid.getElement(getCoord(event))
         try:            
             elem.onRelease(canvas=screen)
             pygame.display.update()
