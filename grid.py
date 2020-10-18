@@ -13,47 +13,69 @@ def checkEvenDivisor(length, div):
     if length % div != 0:
         raise ValueError(f'{len} is divisable by almost everything but not by {div}, try again!')
 
-def gridFactory(config, width, height):
+def gridFactory(config, width, height, actionLibrary):
     divx, divy = tuple(config['divs'])
     grid = Grid(divx, divy, (width, height))
 
+    # handle any merges
     try:
         for merge in config['merges']:
             coords = [tuple(l) for l in merge]
             grid.mergeElements(coords)
     except KeyError:
-        pass
-
+        if err.args[0] == 'merges':
+            pass
+        else:
+            raise
+    
+    # set all specified elements, must specify at least one
     for element in config['elements']:
         pos = tuple(element['pos'])
+        
+        # FIXME: figure out some proper error handling :( this includes the element callback kwargs
+        #optionalKeys = ['icon', 'slider', 'text', 'touch', 'touchArgs', 'release', 'releaseArgs']
 
         # Decide on element type #FIXME: has to be done before setting other attributes as the original element will be destroyed upon setting type
         try:
             grid.setIcon(pos, element['icon'])
-        except KeyError:
-            pass
+        except KeyError as err:
+            if err.args[0] == 'icon':
+                pass
+            else:
+                raise
 
         try:
             grid.setSlider(pos, element['slider'])
-        except KeyError:
-            pass
+        except KeyError as err:
+            if err.args[0] == 'slider':
+                pass
+            else:
+                raise
 
         try:
             grid.setTextBox(pos, element['text'])
-        except KeyError:
-            pass
+        except KeyError as err:
+            if err.args[0] == 'text':
+                pass
+            else:
+                raise
 
         x,y = pos
-        # FIXME: replace locals() with getattr(<mod>, 'foo') by structuring actions in modules
         try:
-            grid.elem[x][y].setTouchAction(locals()[element['touch']], element['id'])
-        except KeyError:
-            pass
+            grid.elem[x][y].setTouchAction(actionLibrary[element['touch']], **element['touchArgs'])
+        except KeyError as err:
+            if err.args[0] == 'touch' or err.args[0] == 'touchArgs':
+                pass
+            else:
+                raise
 
         try:
-            grid.elem[x][y].setReleaseAction(locals()[element['release']], element['id'])
-        except KeyError:
-            pass
+            grid.elem[x][y].setReleaseAction(actionLibrary[element['release']], **element['releaseArgs'])
+        except KeyError as err:
+            if err.args[0] == 'release' or err.args[0] == 'releaseArgs':
+                pass
+            else:
+                raise
 
     return grid
 

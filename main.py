@@ -3,6 +3,7 @@
 import pygame, yaml
 from phue import Bridge as PhilipsHueBridge
 from miio.fan import FanZA3
+from requests import post
 
 # internal dependencies
 from grid import Grid, gridFactory
@@ -26,7 +27,8 @@ hue.connect()
 fanState = 'off'
 
 # Actions
-def toggleHueLight(element, id):
+def toggleHueLight(element, **kwargs):
+    id = kwargs['group_id']
     state = hue.get_group(id)['state']['all_on']
     state = not state
     hue.set_group(id, 'on', state)
@@ -36,6 +38,12 @@ def toggleHueLight(element, id):
     else:
         element.mute()
 
+def setHueLightBrightness(element, **kwargs):
+    id = kwargs['group_id']
+    rate = kwargs['yrate']
+    brightness = int(rate*255)
+    hue.set_group(id, 'bri', brightness)
+    pass
 
 def toggleFan(element):
     global fanState
@@ -46,32 +54,21 @@ def toggleFan(element):
         fanState = 'on'
         #fan.on()
 
-# Build the default GUI
-grid = Grid(3,3, (WIDTH, HEIGHT))
-
-grid.setIcon((0,0), 'icons/wifiLightLinealGradient.svg')
-grid.elem[0][0].setReleaseAction(toggleHueLight, 2)
-
-grid.setIcon((1,0), 'icons/coolingFanLinealGradient.svg')
-grid.elem[1][0].setReleaseAction(toggleFan)
-
-grid.mergeElements([(0,1), (0,2)])
-grid.setSlider((0,1), 0.01)
-
-grid.setGrid((2,0), 2, 2)
-inceptionGrid = grid.elem[2][0]
-inceptionGrid.setIcon((0,0), 'icons/wifiLightLinealGradient.svg')
-inceptionGrid.setIcon((0,1), 'icons/wifiLightLinealGradient.svg')
-inceptionGrid.setIcon((1,0), 'icons/wifiLightLinealGradient.svg')
-inceptionGrid.setIcon((1,1), 'icons/wifiLightLinealGradient.svg')
-
-grid.mergeElements([(1,2), (2,2)])
-grid.setTextBox((1,2),'text')
-
-homeScreen = grid
+def swingLeft(element):
+    post('http://192.168.88.229/multibrackets', data = 'left')
+def swingRight(element):
+    post('http://192.168.88.229/multibrackets', data = 'right')
+def swingStop(element):
+    post('http://192.168.88.229/multibrackets', data = 'ok')
 
 # Import grids
-lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml')), WIDTH, HEIGHT)
+actionLibrary = {'toggleHueLight': toggleHueLight,
+                 'setHueLightBrightness': setHueLightBrightness,
+                 'toggleFan': toggleFan,
+                 'swingLeft': swingLeft,
+                 'swingRight': swingRight,
+                 'swingStop': swingStop}
+lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml')), WIDTH, HEIGHT, actionLibrary)
 
 # Show default GUI
 activeGrid = lightGroupsGrid

@@ -28,18 +28,37 @@ class Element:
         self.rect = Rect(pos, size)
         self.opacity = 1.0
 
-    def setTouchAction(self, callback):
+        self.touchCallback = None
+        self.touchKwargs = None
+
+        self.releaseCallback = None
+        self.releaseKwargs = None
+
+    def setTouchAction(self, callback, **kwargs):
         self.touchCallback = callback
+        self.touchKwargs = kwargs
 
     def onTouch(self, **kwargs):
-        self.touchCallback(self)
+        if self.touchCallback is None:
+            return # no callback registered
+        if self.touchKwargs is not None:
+            mergedKwargs = {**self.touchKwargs, **kwargs} # replace with x = y | z to merge dicts in python3.9
+        else:
+            mergedKwargs = kwargs
+        self.touchCallback(self, **mergedKwargs)
 
-    def setReleaseAction(self, callback, arg=None):
+    def setReleaseAction(self, callback, **kwargs):
         self.releaseCallback = callback
-        self.releaseCallbackArg = arg
+        self.releaseKwargs = kwargs
 
     def onRelease(self, **kwargs):
-        self.releaseCallback(self, self.releaseCallbackArg)
+        if self.releaseCallback is None:
+            return # no callback registered
+        if self.releaseKwargs is not None:
+            mergedKwargs = {**self.releaseKwargs, **kwargs} # replace with x = y | z to merge dicts in python3.9
+        else:
+            mergedKwargs = kwargs
+        self.releaseCallback(self, **mergedKwargs)
 
     def highlight(self):
         self.opacity = 1.0
@@ -89,24 +108,14 @@ class Icon(Element):
     def onTouch(self, **kwargs):
         # change the icon state to show the pressed (scaled down) version
         self.surf = self.surfPressed
-
-        try:
-            super().onTouch()
-        except AttributeError as err:
-            pass # no on touch callback defined for element
-
+        super().onTouch()
         # draw after the super call to allow further modification of the surface
         self.draw(kwargs['canvas'])
 
     def onRelease(self, **kwargs):
         # change the icon state to show the pressed (scaled down) version
         self.surf = self.surfDefault
-
-        try:
-            super().onRelease()
-        except AttributeError:
-            pass # no on touch callback defined for element
-
+        super().onRelease()
         # draw after the super call to allow further modification of the surface
         self.draw(kwargs['canvas'])
 
@@ -139,7 +148,7 @@ class Slider(Element):
         self.draw(kwargs['canvas'])
 
         try:
-            super().onTouch()
+            super().onTouch(**kwargs)
         except AttributeError:
             pass # no on touch callback defined for element
 
