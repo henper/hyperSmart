@@ -1,7 +1,7 @@
 '''
 Storage container for a grapical element in the grid
 '''
-from pygame import Rect, image, Surface, font
+from pygame import Rect, image, Surface, ftfont
 from pygame import SRCALPHA, BLEND_RGBA_MULT
 from svg import Parser, Rasterizer # pynanosvg, depends on Cython
 
@@ -160,6 +160,6 @@ class TextBox(Element):
         fg = TEAL
         bg = BLACK
         
-        font.init() # perhaps not spectacular to init the font system here but should be safe to do again and again
-        abel = font.Font('fonts/abel/Abel-Regular.ttf', int(self.rect.height*0.75))
+        ftfont.init() # perhaps not spectacular to init the font system here but should be safe to do again and again
+        abel = ftfont.Font('fonts/abel/Abel-Regular.ttf', int(self.rect.height*0.75))
         self.surf = abel.render(text, aa, fg, bg)
