@@ -61,12 +61,18 @@ def swingRight(element):
 def swingStop(element):
     post('http://192.168.88.229/multibrackets', data = 'ok')
 
+
 def getCoord(event):
     coord = (0,0)
+
+    # Touch events on Raspbian lite with HyperPixel LCD are inverted
     if event.type in [pygame.FINGERUP, pygame.FINGERDOWN, pygame.FINGERMOTION] :
         coord = int(WIDTH * (1.0 - event.x)), int(HEIGHT * (1.0 - event.y))
+
+    # Support for mouse on host
     elif event.type in [pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
         coord = event.pos
+
     return coord
 
 # Import grids

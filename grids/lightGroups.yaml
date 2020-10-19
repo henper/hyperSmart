@@ -17,7 +17,7 @@ elements:
     touch: 'setHueLightBrightness'
     touchArgs: {group_id: 2}
   - pos: [0,2]
-    text: 'Office'
+    #text: 'Office'
   # second row
   - pos: [1,0]
     icon: 'icons/wifiLightLinealGradient.svg'
@@ -27,7 +27,7 @@ elements:
     slider: 0.0
     touchArgs: {group_id: 3}
   - pos: [1,2]
-    text: 'Living Room'
+    #text: 'Living Room'
   # third row
   - pos: [2,0]
     icon: 'icons/wifiLightLinealGradient.svg'
@@ -37,7 +37,7 @@ elements:
     slider: 0.0
     touchArgs: {group_id: 4}
   - pos: [2,2]
-    text: 'Bar Cabinet'
+    #text: 'Bar Cabinet'
   # fourth row
   # swing arm prototype
   - pos: [3,0]

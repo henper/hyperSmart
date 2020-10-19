@@ -161,7 +161,9 @@ class Grid(Element):
                     pass
                 
                 return elem, yrate
-        return None
+        
+        x,y = click
+        raise ValueError(f'No element found for coordinate ({x},{y})')
 
     def setElement(self, coord, element):
         # typically there is always a existing element at every grid position
