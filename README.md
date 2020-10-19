@@ -4,13 +4,14 @@ Smart Home controller device with Raspberry Pi and [Pimoroni HyperPixel Weirdly 
 ## Dependencies
 * [hyperpixel4](https://github.com/pimoroni/hyperpixel4)
 * [pygame](https://www.pygame.org/)
+  * libsdl2-ttf-2.0-0
 * [pynanosvg](https://github.com/ethanhs/pynanosvg)
   * [cython](https://cython.org/)
   * [nanosvg](https://github.com/memononen/nanosvg/)
 * [phue](https://github.com/studioimaginaire/phue)
 * [python-miio](https://github.com/rytilahti/python-miio)
-** libffi-dev
-** libssl-dev
+  * libffi-dev
+  * libssl-dev
 
 ## Notes on Usage
 In order to run on Raspbian Lite OS:
@@ -19,4 +20,6 @@ In order to run on Raspbian Lite OS:
 * running user needs to be member of the tty and video groups.
 * tty files needs 660 access rights, modified via udev rules.
 * Perhpas unecessarily but [patched](https://www.raspberrypi.org/forums/viewtopic.php?t=250001) libsdl for tocuhscreens. 
-* touchevents was inverted, fixed by modifying /etc/ts.conf with module `invert x0=720 y0=720`.
+* touchevents was inverted, fixed by modifying /etc/ts.conf with module `invert x0=720 y0=720`. Update: pygame does not use libts, fix by hack getCoord() function in app.
+* Erratic touch-events, interpreted as mouse-clicks, in pygame 1.94 -despite patched sdl. Fixed by updating to pygame 2 (dev-branch), which includes support for real touch-events (SDL2)
+* No font support in pygame2, changed to FreeType fonts -which necessitated install of sdl2 ttf
