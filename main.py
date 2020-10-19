@@ -67,7 +67,7 @@ def getCoord(event):
 
     # Touch events on Raspbian lite with HyperPixel LCD are inverted
     if event.type in [pygame.FINGERUP, pygame.FINGERDOWN, pygame.FINGERMOTION] :
-        coord = int(WIDTH * (1.0 - event.x)), int(HEIGHT * (1.0 - event.y))
+        coord = int((WIDTH-1) * (1.0 - event.x)), int((HEIGHT-1) * (1.0 - event.y))
 
     # Support for mouse on host
     elif event.type in [pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
