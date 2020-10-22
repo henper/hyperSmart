@@ -4,6 +4,9 @@ import pygame, yaml
 from phue import Bridge as PhilipsHueBridge
 from miio.fan import FanZA3
 from requests import post
+from threading import Timer
+from os import uname
+from pigpio import pi
 
 # internal dependencies
 from grid import Grid, gridFactory
@@ -62,6 +65,7 @@ def swingStop(element):
     post('http://192.168.88.229/multibrackets', data = 'ok')
 
 
+# Helpers
 def getCoord(event):
     coord = (0,0)
 
@@ -74,6 +78,21 @@ def getCoord(event):
         coord = event.pos
 
     return coord
+
+host = uname()[4].startswith('x86')
+gpio = pi()
+brightness = 1.0
+def setBrightness(rate):
+    global gpio
+    global brightness
+    if rate != brightness and not host:
+        brightness = rate
+        if brightness != 0:
+            dutycycle = int(255/brightness)
+        else:
+            dutycycle = 0
+        # broadcom pin number 19 is the brightness control for HyperPixel4
+        gpio.set_PWM_dutycycle(19, )
 
 # Import grids
 actionLibrary = {'toggleHueLight': toggleHueLight,
@@ -93,10 +112,27 @@ pygame.display.flip()
 
 pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
 
+# Sleep system
+def sleep():
+    global timer
+    global gpio
+    timer.cancel()
+    print('Timeout, going to sleep...')
+    setBrightness(0)
 
 
+timer = Timer(5.0, sleep)
+def keepAlive():
+    global timer
+    timer.cancel()
+    timer = Timer(5.0, sleep)
+    timer.start()
+    setBrightness(0.5)
+
+# Game loop
 while True:
     event = pygame.event.wait() # sleep until the user acts
+    keepAlive()
 
     if event.type in [pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN, pygame.FINGERMOTION] or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
 
