@@ -82,7 +82,7 @@ actionLibrary = {'toggleHueLight': toggleHueLight,
                  'swingLeft': swingLeft,
                  'swingRight': swingRight,
                  'swingStop': swingStop}
-lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml')), WIDTH, HEIGHT, actionLibrary)
+lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml'), Loader=yaml.FullLoader), WIDTH, HEIGHT, actionLibrary)
 
 # Show default GUI
 activeGrid = lightGroupsGrid

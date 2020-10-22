@@ -1,7 +1,7 @@
 '''
 Storage container for a grapical element in the grid
 '''
-from pygame import Rect, image, Surface, ftfont
+from pygame import Rect, image, Surface, ftfont, transform
 from pygame import SRCALPHA, BLEND_RGBA_MULT
 from svg import Parser, Rasterizer # pynanosvg, depends on Cython
 
@@ -80,7 +80,7 @@ class Element:
             pass # happens when caller attempts to draw an element without setting a derived class
 
 class Icon(Element):
-    def __init__(self, pos, size, svgFile):
+    def __init__(self, pos, size, svgFile, rotation=0.0):
         super().__init__(pos, size)
 
         # use the same size for the icon as the grid element
@@ -101,6 +101,11 @@ class Icon(Element):
         # make a mini version for activation state
         buf = rasterizer.rasterize(svg, width, height, scale * ds, tx = dx*width, ty =dy*height)
         self.surfPressed = image.frombuffer(buf, self.rect.size, 'RGBA')
+
+        # apply rotation
+        if (rotation !=  0.0):
+            self.surfDefault = transform.rotate(self.surfDefault, rotation)
+            self.surfPressed = transform.rotate(self.surfPressed, rotation)
 
         # initialize the active surface
         self.surf = self.surfDefault

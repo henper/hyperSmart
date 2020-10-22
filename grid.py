@@ -11,7 +11,7 @@ from operator import sub
 
 def checkEvenDivisor(length, div):
     if length % div != 0:
-        raise ValueError(f'{len} is divisable by almost everything but not by {div}, try again!')
+        raise ValueError(f'{length} is divisable by almost everything but not by {div}, try again!')
 
 def gridFactory(config, width, height, actionLibrary):
     divx, divy = tuple(config['divs'])
@@ -22,7 +22,7 @@ def gridFactory(config, width, height, actionLibrary):
         for merge in config['merges']:
             coords = [tuple(l) for l in merge]
             grid.mergeElements(coords)
-    except KeyError:
+    except KeyError as err:
         if err.args[0] == 'merges':
             pass
         else:
@@ -37,7 +37,15 @@ def gridFactory(config, width, height, actionLibrary):
 
         # Decide on element type #FIXME: has to be done before setting other attributes as the original element will be destroyed upon setting type
         try:
-            grid.setIcon(pos, element['icon'])
+            rotation = element['rotation']
+        except KeyError as err:
+            if err.args[0] == 'rotation':
+                rotation = 0.0
+            else:
+                raise
+
+        try:
+            grid.setIcon(pos, element['icon'], rotation)
         except KeyError as err:
             if err.args[0] == 'icon':
                 pass
@@ -97,13 +105,13 @@ class Grid(Element):
 
         # Create origin (top left corner) of each element
         self.elem = [] # store in grid positions
-        for rowIndex in range(divy):
-            row = []
-            for colIndex in range(divx):
-                topleft = (x + colIndex * xlen, y + rowIndex * ylen)
-                row.append(Element(topleft, size))
-                e = row.copy()
-            row.clear()
+        for rowIndex in range(divx):
+            col = []
+            for colIndex in range(divy):
+                topleft = (x + rowIndex * xlen, y + colIndex * ylen)
+                col.append(Element(topleft, size))
+                e = col.copy()
+            col.clear()
             self.elem.append(e)
         
         # flatten grid to a single list for easier iteration
@@ -113,6 +121,19 @@ class Grid(Element):
     def draw(self, canvas):
         for elem in self.elems:
             elem.draw(canvas)
+
+    def createConfig(self):
+        config = {'divs': [len(self.elem), len(self.elem[0])]}
+        config['merges'] = []
+
+        elements = []
+        for x in range(len(self.elem)):
+            for y in range(len(self.elem[0])):
+                element = {'pos': [x, y]}
+                elements.append(element)
+        config['elements'] = elements
+
+        return config
 
     ''' Merge _adjacent_ elements
           coords : list of tuples with the x,y positions of all elements to be merge
@@ -178,7 +199,7 @@ class Grid(Element):
         # replace in grid
         self.elem[x][y] = element
 
-    def setIcon(self, coord, svg):
+    def setIcon(self, coord, svg, rotate=0.0):
         # get a hold of the element we're going to destroy
         x, y = coord
         deprecated = self.elem[x][y]
@@ -188,7 +209,7 @@ class Grid(Element):
         size = deprecated.rect.size
         
         # create an icon and with that, a brand spanking new element
-        icon = Icon(position, size, svg)
+        icon = Icon(position, size, svg, rotate)
 
         # replace the references of the old element in the grid with the new
         self.setElement(coord, icon)

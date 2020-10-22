@@ -1,10 +1,20 @@
-divs: [2,2]
+divs: [3,3]
 elements:
   - pos: [0,0]
     text: '0,0'
   - pos: [0,1]
     text: '0,1'
+  - pos: [0,2]
+    text: '0,2'
   - pos: [1,0]
     text: '1,0'
   - pos: [1,1]
     text: '1,1'
+  - pos: [1,2]
+    text: '1,2'
+  - pos: [2,0]
+    text: '2,0'
+  - pos: [2,1]
+    text: '2,1'
+  - pos: [2,2]
+    text: '2,2'
