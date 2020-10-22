@@ -88,11 +88,11 @@ def setBrightness(rate):
     if rate != brightness and not host:
         brightness = rate
         if brightness != 0:
-            dutycycle = int(255/brightness)
+            dutycycle = int(255*brightness)
         else:
             dutycycle = 0
         # broadcom pin number 19 is the brightness control for HyperPixel4
-        gpio.set_PWM_dutycycle(19, )
+        gpio.set_PWM_dutycycle(19, dutycycle)
 
 # Import grids
 actionLibrary = {'toggleHueLight': toggleHueLight,
@@ -113,26 +113,33 @@ pygame.display.flip()
 pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
 
 # Sleep system
+isSleeping = False
 def sleep():
     global timer
-    global gpio
+    global isSleeping
     timer.cancel()
-    print('Timeout, going to sleep...')
     setBrightness(0)
-
+    isSleeping = True
 
 timer = Timer(5.0, sleep)
 def keepAlive():
     global timer
+    global isSleeping
     timer.cancel()
-    timer = Timer(5.0, sleep)
+    timer = Timer(30.0, sleep)
     timer.start()
-    setBrightness(0.5)
+    setBrightness(0.25)
+    wasSleeping = isSleeping
+    isSleeping = False
+    return wasSleeping
 
 # Game loop
 while True:
     event = pygame.event.wait() # sleep until the user acts
-    keepAlive()
+    
+    wasSleeping = keepAlive()
+    if wasSleeping:
+        break # don't process the event any further, just wake up
 
     if event.type in [pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN, pygame.FINGERMOTION] or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
 
@@ -162,4 +169,6 @@ while True:
     if event.type == pygame.KEYDOWN and event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL:
         break
 
+timer.cancel()
+setBrightness(0.25)
 pygame.quit()
