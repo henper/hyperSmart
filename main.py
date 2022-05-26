@@ -139,7 +139,7 @@ while True:
     
     wasSleeping = keepAlive()
     if wasSleeping:
-        break # don't process the event any further, just wake up
+        continue # don't process the event any further, just wake up
 
     if event.type in [pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN, pygame.FINGERMOTION] or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
 
