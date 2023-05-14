@@ -2,7 +2,7 @@
 # external dependencies
 import pygame, yaml
 from phue import Bridge as PhilipsHueBridge
-from miio.fan import FanZA3
+#from miio.fan import FanZA3
 from requests import post
 from threading import Timer
 from os import uname

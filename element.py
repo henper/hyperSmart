@@ -3,9 +3,6 @@ Storage container for a grapical element in the grid
 '''
 from pygame import Rect, image, Surface, ftfont, transform
 from pygame import SRCALPHA, BLEND_RGBA_MULT
-from svg import Parser, Rasterizer # pynanosvg, depends on Cython
-
-rasterizer = Rasterizer()
 
 BLACK = (0,0,0,0)
 TEAL = (20, 217, 210)
@@ -90,18 +87,13 @@ class Icon(Element):
         ds = 0.9
         dx = dy = (1 - ds) / 2 # the position offset to use in x and y directions
 
-        # use pynanosvg to convert svg file to bytes
-        svg = Parser.parse_file(svgFile)#, PPI) ..I do not understand DPI
-
-        # figure out the scaling, making sure not to draw outside the lines
-        scale = min(width / svg.width, height / svg.height)
-        buf = rasterizer.rasterize(svg, width, height, scale)
-        self.surfDefault = image.frombuffer(buf, self.rect.size, 'RGBA')
+        # use nanosvg to convert svg file to bytes
+        self.surfDefault = transform.scale(image.load(svgFile), (width, height))
 
         # make a mini version for activation state
-        buf = rasterizer.rasterize(svg, width, height, scale * ds, tx = dx*width, ty =dy*height)
-        self.surfPressed = image.frombuffer(buf, self.rect.size, 'RGBA')
-
+        self.surfPressed = transform.scale(self.surfDefault, (width*ds, height*ds))
+        self.surfPressed.scroll(int(width*dx), int(height*dy))
+        
         # apply rotation
         if (rotation !=  0.0):
             self.surfDefault = transform.rotate(self.surfDefault, rotation)

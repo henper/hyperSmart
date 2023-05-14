@@ -5,9 +5,6 @@ Smart Home controller device with Raspberry Pi and [Pimoroni HyperPixel Weirdly 
 * [hyperpixel4](https://github.com/pimoroni/hyperpixel4)
 * [pygame](https://www.pygame.org/)
   * libsdl2-ttf-2.0-0
-* [pynanosvg](https://github.com/ethanhs/pynanosvg)
-  * [cython](https://cython.org/)
-  * [nanosvg](https://github.com/memononen/nanosvg/)
 * [phue](https://github.com/studioimaginaire/phue)
 * [python-miio](https://github.com/rytilahti/python-miio)
   * libffi-dev
