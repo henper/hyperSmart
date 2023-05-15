@@ -1,7 +1,7 @@
 
 # external dependencies
 import pygame, yaml
-from phue import Bridge as PhilipsHueBridge
+#from phue import Bridge as PhilipsHueBridge
 #from miio.fan import FanZA3
 from requests import post
 from threading import Timer
@@ -19,8 +19,8 @@ REFRESHRATE = 60
 PPI = '254in'
 
 # Connect to Philips Hue Bridge
-hue = PhilipsHueBridge()
-hue.connect()
+#hue = PhilipsHueBridge()
+#hue.connect()
 
 # Connect to Xiomei devices
 #fan = FanZA3('192.168.88.232', open('tokens/zhimi-fan-za3_mibtFDE2.ascii', 'r').readline())
@@ -30,6 +30,7 @@ hue.connect()
 fanState = 'off'
 
 # Actions
+'''
 def toggleHueLight(element, **kwargs):
     id = kwargs['group_id']
     state = hue.get_group(id)['state']['all_on']
@@ -56,7 +57,7 @@ def toggleFan(element):
     else:
         fanState = 'on'
         #fan.on()
-
+'''
 def swingLeft(element):
     post('http://192.168.88.229/multibrackets', data = 'left')
 def swingRight(element):
@@ -95,16 +96,22 @@ def setBrightness(rate):
         gpio.set_PWM_dutycycle(19, dutycycle)
 
 # Import grids
+'''
 actionLibrary = {'toggleHueLight': toggleHueLight,
                  'setHueLightBrightness': setHueLightBrightness,
                  'toggleFan': toggleFan,
                  'swingLeft': swingLeft,
                  'swingRight': swingRight,
                  'swingStop': swingStop}
-lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml'), Loader=yaml.FullLoader), WIDTH, HEIGHT, actionLibrary)
+lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml'), Loader=yaml.FullLoader), (WIDTH, HEIGHT), actionLibrary)
+'''
+
+visualizationGrid = gridFactory(yaml.load(open('grids/vis.yaml'), Loader=yaml.FullLoader), (WIDTH, HEIGHT))
+
+
 
 # Show default GUI
-activeGrid = lightGroupsGrid
+activeGrid = visualizationGrid
 pygame.display.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 activeGrid.draw(screen)

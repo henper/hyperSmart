@@ -6,6 +6,8 @@ Class to create and store a grid pattern of generic dimensions
     Given click event positions, determine which element should be activated.
     
 '''
+import yaml
+
 from element import *
 from operator import sub
 
@@ -13,9 +15,10 @@ def checkEvenDivisor(length, div):
     if length % div != 0:
         raise ValueError(f'{length} is divisable by almost everything but not by {div}, try again!')
 
-def gridFactory(config, width, height, actionLibrary):
+def gridFactory(config, size, pos = (0,0), actionLibrary = {}):
     divx, divy = tuple(config['divs'])
-    grid = Grid(divx, divy, (width, height))
+
+    grid = Grid(divx, divy, size, pos)
 
     # handle any merges
     try:
@@ -64,6 +67,14 @@ def gridFactory(config, width, height, actionLibrary):
             grid.setTextBox(pos, element['text'])
         except KeyError as err:
             if err.args[0] == 'text':
+                pass
+            else:
+                raise
+
+        try:
+            grid.setGrid(pos, element['grid'])
+        except KeyError as err:
+            if err.args[0] == 'grid':
                 pass
             else:
                 raise
@@ -244,7 +255,7 @@ class Grid(Element):
         # replace the references of the old element in the grid with the new
         self.setElement(coord, tbox)
 
-    def setGrid(self, coord, divx, divy):
+    def setGrid(self, coord, grid :str, actionLibrary = {}):
         # get a hold of the element we're going to destroy
         x, y = coord
         deprecated = self.elem[x][y]
@@ -254,7 +265,7 @@ class Grid(Element):
         size = deprecated.rect.size
 
         # create a Grid-within-grid and with that, a brand spanking new element
-        grid = Grid(divx, divy, size, position)
+        grid = gridFactory(yaml.load(open(grid), Loader=yaml.FullLoader), size, position, actionLibrary)
 
         # replace the references of the old element in the grid with the new
         self.setElement(coord, grid)

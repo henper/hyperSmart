@@ -1,0 +1,4 @@
+divs: [1,1]
+elements:
+  - pos: [0,0]
+    icon: 'icons/wifiLightLinealGradient.svg'
