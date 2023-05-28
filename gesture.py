@@ -32,13 +32,14 @@ class GestureDetection():
             return Gesture.QUIT
         
         self.position = getattr(event, 'pos', (0,0)) # not all events has a position attribute
+        print(f' event type: {event.type} position x: {self.position[0]} y: {self.position[1]}')
 
         if (event.type in [MOUSEBUTTONDOWN, FINGERDOWN]):
-            self.__down_position = event.pos
+            self.__down_position = self.position
             self.event = Gesture.DOWN
 
         elif (event.type == FINGERMOTION or event.type == MOUSEMOTION and event.buttons[0] == 1):
-            self.travel = self.__down_position[0] - event.pos[0]
+            self.travel = self.__down_position[0] - self.position[0]
             if abs(self.travel) > 20:
                 self.event = Gesture.SWIPE
                 
