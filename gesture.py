@@ -21,6 +21,7 @@ class GestureDetection():
     position = (0,0)
     velocity = 0
     travel = 0
+    pdx = 0.0
     
     event = Gesture.NONE
     __down_position = (0,0)
@@ -34,21 +35,28 @@ class GestureDetection():
         if event.type == QUIT or event.type == KEYDOWN and event.key == K_c and key.get_mods() & KMOD_CTRL:
             self.event = Gesture.QUIT
             return Gesture.QUIT
-        
+
         if hasattr(event, 'x') :  # finger events has x,y,dx,dy
             self.position = int((WIDTH-1) * (1.0 - event.x)), int((HEIGHT-1) * (1.0 - event.y))
+            self.velocity = int(-WIDTH * (self.pdx - event.dx))
+            self.pdx = event.dx
         elif hasattr(event, 'pos') : # mouse event
             self.position = event.pos
-        
 
-        print(f' event type: {event.type} position x: {self.position[0]} y: {self.position[1]}, dx: {getattr(event, "dx", "-")} dy: {getattr(event, "dy", "-")}')
+        #print(f' event type: {event.type} position x: {self.position[0]} y: {self.position[1]}, dx: {getattr(event, "dx", "-")} dy: {getattr(event, "dy", "-")}')
 
         if (event.type in [MOUSEBUTTONDOWN, FINGERDOWN]):
             self.__down_position = self.position
             self.event = Gesture.DOWN
 
         elif (event.type == FINGERMOTION or event.type == MOUSEMOTION and event.buttons[0] == 1):
-            self.travel = self.__down_position[0] - self.position[0]
+            
+            if hasattr(event, 'dx') :
+                self.travel = event.dx * -WIDTH
+            else:
+                self.travel = self.__down_position[0] - self.position[0]
+                self.velocity = 1 if self.travel > 0 else -1
+
             if abs(self.travel) > 20:
                 self.event = Gesture.SWIPE
                 
@@ -58,12 +66,6 @@ class GestureDetection():
                 self.event = Gesture.UP
             else:
                 self.event = Gesture.NONE
-                
-                if self.travel > 1 :
-                    self.velocity = 1
-                else :
-                    self.velocity = -1
-
                 return Gesture.SWUP
         
         return self.event

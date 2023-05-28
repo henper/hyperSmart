@@ -192,6 +192,7 @@ while True:
             area=pygame.Rect(WIDTH + current, 0, WIDTH, HEIGHT)
             screen.blit(swipe_surface, (0,0), area)
         pygame.display.update()
+        pygame.event.pump()
         continue
 
     event = pygame.event.wait() # sleep until the user acts
