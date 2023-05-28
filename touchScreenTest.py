@@ -21,6 +21,14 @@ maxy = 0
 while True:
     event = pygame.event.wait() # sleep until the user acts
 
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        print(f'down   {event.pos}')
+    if event.type == pygame.MOUSEMOTION:
+        print(f'motion {event.pos}')
+    if event.type == pygame.MOUSEBUTTONUP:
+        print(f'up     {event.pos}')
+
+
     if event.type  == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
         
         if raspberry:

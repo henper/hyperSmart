@@ -129,9 +129,9 @@ class Grid(Element):
         self.elems = []
         self.elems = [item for sublist in self.elem for item in sublist]
     
-    def draw(self, canvas):
+    def draw(self, canvas, origin=(0,0)):
         for elem in self.elems:
-            elem.draw(canvas)
+            elem.draw(canvas, origin)
 
     def createConfig(self):
         config = {'divs': [len(self.elem), len(self.elem[0])]}

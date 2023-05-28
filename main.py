@@ -10,6 +10,7 @@ from pigpio import pi
 
 # internal dependencies
 from grid import Grid, gridFactory
+from gesture import *
 
 # HyperPixel Weirdly Square
 WIDTH = 720
@@ -106,18 +107,46 @@ actionLibrary = {'toggleHueLight': toggleHueLight,
 lightGroupsGrid = gridFactory(yaml.load(open('grids/lightGroups.yaml'), Loader=yaml.FullLoader), (WIDTH, HEIGHT), actionLibrary)
 '''
 
-visualizationGrid = gridFactory(yaml.load(open('grids/vis.yaml'), Loader=yaml.FullLoader), (WIDTH, HEIGHT))
+uno  = gridFactory(yaml.load(open('grids/uno.yaml' ), Loader=yaml.FullLoader), (WIDTH, HEIGHT))
+dos  = gridFactory(yaml.load(open('grids/dos.yaml' ), Loader=yaml.FullLoader), (WIDTH, HEIGHT))
+tres = gridFactory(yaml.load(open('grids/tres.yaml'), Loader=yaml.FullLoader), (WIDTH, HEIGHT))
 
-
+grids = [uno, dos, tres]
 
 # Show default GUI
-activeGrid = visualizationGrid
+active = 0
 pygame.display.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-activeGrid.draw(screen)
+grids[active].draw(screen)
 pygame.display.flip()
 
-pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window
+# swipe between grids
+swipe_surface = pygame.Surface((WIDTH*3, HEIGHT))
+
+def swipe_set(grids, active):
+    next = (active + 1) % len(grids)
+    prev = (active - 1) % len(grids)
+
+    swipe_surface.fill((0,0,0))
+    grids[ prev ].draw(swipe_surface)
+    grids[active].draw(swipe_surface, (1*WIDTH, 0))
+    grids[ next ].draw(swipe_surface, (2*WIDTH, 0))
+    swipe_surface.convert()
+
+swipe_set(grids, active)
+area = pygame.Rect(0,0,0,0)
+
+'''
+showcase = pygame.transform.scale(swipe_surface, (WIDTH, HEIGHT/len(grids)))
+screen.fill((0,0,0))
+screen.blit(showcase, (0, 0))
+pygame.display.flip()
+'''
+
+# input and gestures
+pygame.mouse.set_visible(False) #conveniently this does not apply on WSL with VcXsrv window, or WSL2
+relativeMotion = 0
+lastPoint = 0
 
 # Sleep system
 isSleeping = False
@@ -140,6 +169,8 @@ def keepAlive():
     isSleeping = False
     return wasSleeping
 
+gestureDetection = GestureDetection()
+
 # Game loop
 while True:
     event = pygame.event.wait() # sleep until the user acts
@@ -147,11 +178,18 @@ while True:
     wasSleeping = keepAlive()
     if wasSleeping:
         continue # don't process the event any further, just wake up
+    
+    gesture = gestureDetection.update(event)
 
-    if event.type in [pygame.MOUSEBUTTONDOWN, pygame.FINGERDOWN, pygame.FINGERMOTION] or event.type == pygame.MOUSEMOTION and event.buttons[0] == 1:
+    if gesture == Gesture.NONE:
+        continue
 
+    elif gesture == Gesture.QUIT:
+        break
+
+    elif gesture == Gesture.DOWN:
         # determine which element was activated
-        elem, yrate = activeGrid.getElement(getCoord(event))
+        elem, yrate = grids[active].getElement(gestureDetection.position)
         try:
             elem.onTouch(canvas=screen, yrate=yrate)
             pygame.display.update()
@@ -159,10 +197,9 @@ while True:
             pass # user pressed an empty cell
         continue
 
-    if event.type in [pygame.MOUSEBUTTONUP, pygame.FINGERUP] :
-
+    elif gesture == Gesture.UP :
         # determine which element was activated
-        elem, yrate = activeGrid.getElement(getCoord(event))
+        elem, yrate = grids[active].getElement(gestureDetection.position)
         try:            
             elem.onRelease(canvas=screen)
             pygame.display.update()
@@ -170,11 +207,23 @@ while True:
             pass # user pressed an empty cell
         continue
 
-    # Allow for ways to exit the application
-    if event.type == pygame.QUIT: # closing the (proverbial) window
-        break
-    if event.type == pygame.KEYDOWN and event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL:
-        break
+    elif gesture == Gesture.SWIPE :
+        area=pygame.Rect(WIDTH + gestureDetection.travel, 0, WIDTH, HEIGHT)
+        screen.blit(swipe_surface, (0,0), area)
+        pygame.display.update()
+
+    elif gesture == Gesture.SWUP :
+        if   area.left <  WIDTH / 2 :
+            active = (active - 1) % len(grids)
+            swipe_set(grids, active)
+        elif area.left > WIDTH * 3/2 :
+            active = (active + 1) % len(grids)
+            swipe_set(grids, active)
+
+        grids[active].draw(screen)
+        pygame.display.update()
+
+
 
 timer.cancel()
 setBrightness(0.25)

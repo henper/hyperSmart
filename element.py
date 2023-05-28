@@ -1,6 +1,7 @@
 '''
 Storage container for a grapical element in the grid
 '''
+from operator import add
 from pygame import Rect, image, Surface, ftfont, transform
 from pygame import SRCALPHA, BLEND_RGBA_MULT
 
@@ -63,16 +64,15 @@ class Element:
     def mute(self):
         self.opacity = 0.5
 
-    def draw(self, canvas):
+    def draw(self, canvas, origin = (0,0)):
         try:
             if self.opacity < 1.0:
                 surf = self.surf.copy() # apply opacity filter on a copy of the surface so that subsequent draws do not mute into oblivion
                 setSurfaceOpacity(surf, self.opacity)
             else:
                 surf = self.surf
-
-            canvas.fill(BLACK, rect=self.rect) # blank area
-            canvas.blit(surf, self.rect.topleft)
+            canvas.fill(BLACK, rect=self.rect.move(origin)) # blank area
+            canvas.blit(surf, tuple(map(add, self.rect.topleft, origin)))
         except AttributeError:
             pass # happens when caller attempts to draw an element without setting a derived class
 
@@ -104,7 +104,7 @@ class Icon(Element):
 
     def onTouch(self, **kwargs):
         # change the icon state to show the pressed (scaled down) version
-        self.surf = self.surfPressed
+        #self.surf = self.surfPressed
         super().onTouch()
         # draw after the super call to allow further modification of the surface
         self.draw(kwargs['canvas'])
