@@ -2,6 +2,9 @@
 from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, FINGERDOWN, FINGERUP, FINGERMOTION, QUIT, KEYDOWN, K_c, key, KMOD_CTRL
 from enum import Enum
 
+WIDTH = 720
+HEIGHT = 720
+
 class Gesture(Enum):
 
     # Detected events and their properties
@@ -32,11 +35,13 @@ class GestureDetection():
             self.event = Gesture.QUIT
             return Gesture.QUIT
         
-        new_pos = getattr(event, 'pos', (0,0)) # not all events has a position attribute
-        self.velocity = self.position[0] - new_pos[0]
-        self.position = new_pos
+        if hasattr(event, 'x') :  # finger events has x,y,dx,dy
+            self.position = (int(event.x * WIDTH), int(event.y * HEIGHT))
+        elif hasattr(event, 'pos') : # mouse event
+            self.position = event.pos
+        
 
-        print(f' event type: {event.type} position x: {self.position[0]} y: {self.position[1]}')
+        print(f' event type: {event.type} position x: {self.position[0]} y: {self.position[1]}, dx: {getattr(event, "dx", "-")} dy: {getattr(event, "dy", "-")}')
 
         if (event.type in [MOUSEBUTTONDOWN, FINGERDOWN]):
             self.__down_position = self.position
