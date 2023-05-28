@@ -36,7 +36,7 @@ class GestureDetection():
             return Gesture.QUIT
         
         if hasattr(event, 'x') :  # finger events has x,y,dx,dy
-            self.position = (int(event.x * WIDTH), int(event.y * HEIGHT))
+            self.position = int((WIDTH-1) * (1.0 - event.x)), int((HEIGHT-1) * (1.0 - event.y))
         elif hasattr(event, 'pos') : # mouse event
             self.position = event.pos
         
