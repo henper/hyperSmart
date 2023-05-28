@@ -21,7 +21,7 @@ class GestureDetection():
     event = Gesture.NONE
     __down_position = (0,0)
 
-    def get_supported_events():
+    def get_supported_events(self):
         return [MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, FINGERDOWN, FINGERUP, FINGERMOTION, QUIT, KEYDOWN]
 
     def update(self, event) -> Gesture:
@@ -31,12 +31,7 @@ class GestureDetection():
             self.event = Gesture.QUIT
             return Gesture.QUIT
         
-        try:
-            self.position = event.pos
-        except AttributeError as err:
-            if err.name == 'pos':
-                return Gesture.NONE # not all events has a position attribute
-            raise err
+        self.position = getattr(event, 'pos', (0,0)) # not all events has a position attribute
 
         if (event.type in [MOUSEBUTTONDOWN, FINGERDOWN]):
             self.__down_position = event.pos

@@ -170,6 +170,8 @@ def keepAlive():
     return wasSleeping
 
 gestureDetection = GestureDetection()
+pygame.event.set_allowed(gestureDetection.get_supported_events())
+pygame.event.clear()
 
 # Game loop
 while True:

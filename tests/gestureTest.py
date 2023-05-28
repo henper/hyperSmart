@@ -38,9 +38,18 @@ class Test(unittest.TestCase):
         assert(gesture == Gesture.SWIPE)
         assert(gd.travel == -30)
 
-        gd.update(event(FINGERUP,     (40,0)))
+        gesture = gd.update(event(FINGERUP,     (40,0)))
 
         assert(gesture == Gesture.SWUP)
+
+    def testNoPos(self):
+        gd = GestureDetection()
+
+        class positionless_event():
+            type = 0
+        
+        gesture = gd.update(positionless_event())
+        assert(gesture == Gesture.NONE)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
