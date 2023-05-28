@@ -16,6 +16,7 @@ class GestureDetection():
 
     # states
     position = (0,0)
+    velocity = 0
     travel = 0
     
     event = Gesture.NONE
@@ -31,7 +32,10 @@ class GestureDetection():
             self.event = Gesture.QUIT
             return Gesture.QUIT
         
-        self.position = getattr(event, 'pos', (0,0)) # not all events has a position attribute
+        new_pos = getattr(event, 'pos', (0,0)) # not all events has a position attribute
+        self.velocity = self.position[0] - new_pos[0]
+        self.position = new_pos
+
         print(f' event type: {event.type} position x: {self.position[0]} y: {self.position[1]}')
 
         if (event.type in [MOUSEBUTTONDOWN, FINGERDOWN]):
@@ -49,6 +53,12 @@ class GestureDetection():
                 self.event = Gesture.UP
             else:
                 self.event = Gesture.NONE
+                
+                if self.travel > 1 :
+                    self.velocity = 1
+                else :
+                    self.velocity = -1
+
                 return Gesture.SWUP
         
         return self.event

@@ -135,6 +135,9 @@ def swipe_set(grids, active):
 
 swipe_set(grids, active)
 area = pygame.Rect(0,0,0,0)
+target = 0
+current = 0
+velocity = 0
 
 '''
 showcase = pygame.transform.scale(swipe_surface, (WIDTH, HEIGHT/len(grids)))
@@ -175,6 +178,22 @@ pygame.event.clear()
 
 # Game loop
 while True:
+
+    # process animations before accepting more user input
+    if current != target :
+        if (current > target and current + velocity < target) or (current < target and current + velocity < target) :
+            current = target
+        else :
+            current += velocity
+        
+        if current == target :
+            grids[active].draw(screen)
+        else :
+            area=pygame.Rect(WIDTH + current, 0, WIDTH, HEIGHT)
+            screen.blit(swipe_surface, (0,0), area)
+        pygame.display.update()
+        continue
+
     event = pygame.event.wait() # sleep until the user acts
     
     wasSleeping = keepAlive()
@@ -215,15 +234,26 @@ while True:
         pygame.display.update()
 
     elif gesture == Gesture.SWUP :
-        if   area.left <  WIDTH / 2 :
+        current = gestureDetection.travel
+        velocity = gestureDetection.velocity
+        
+        if gestureDetection.travel <  -WIDTH / 2 :
+            # swipe left
             active = (active - 1) % len(grids)
             swipe_set(grids, active)
-        elif area.left > WIDTH * 3/2 :
+            target = WIDTH * 0
+        elif gestureDetection.travel > WIDTH / 2 :
+            # swipe right
             active = (active + 1) % len(grids)
             swipe_set(grids, active)
+            target = WIDTH * 2
+        else :
+            # back to center
+            velocity *= -1
+            target = WIDTH * 1
 
-        grids[active].draw(screen)
-        pygame.display.update()
+        #grids[active].draw(screen)
+        #pygame.display.update()
 
 
 
