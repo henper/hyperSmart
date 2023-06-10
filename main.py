@@ -173,6 +173,7 @@ def keepAlive():
     return wasSleeping
 
 gestureDetection = GestureDetection()
+pygame.event.set_blocked(None) # contrary to nomenclature, this blocks all events
 pygame.event.set_allowed(gestureDetection.get_supported_events())
 pygame.event.clear()
 
