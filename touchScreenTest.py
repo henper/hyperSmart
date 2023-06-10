@@ -51,15 +51,16 @@ while True:
         miny = y
 
     elif gesture == Gesture.DOWN:
-        print(f'down   {gestureDetection.position}')
+        print(f'down   {gestureDetection.position} travel {gestureDetection.travel}')
         pygame.draw.circle(screen, (255,255,255), gestureDetection.position, 10)
 
-    elif gesture == Gesture.UP or gesture == Gesture.SWUP:
-        print(f'up     {gestureDetection.position}')
-        screen.fill((0,0,0))
+    elif gesture == Gesture.SWIPE:
+        print(f'swipe  {gestureDetection.position} travel {gestureDetection.travel}')
+        pygame.draw.circle(screen, (255,0,0), gestureDetection.position, 10)
 
-    elif gesture == Gesture.SWIPE :
-        pygame.draw.circle(screen, (0,0,255), gestureDetection.position, 10)
+    elif gesture == Gesture.UP or gesture == Gesture.SWUP:
+        print(f'up     {gestureDetection.position} velocity {gestureDetection.velocity}')
+        screen.fill((0,0,0))
     
     pygame.display.flip()
 
