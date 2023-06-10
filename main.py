@@ -118,6 +118,7 @@ active = 0
 pygame.display.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 grids[active].draw(screen)
+screen.convert()
 pygame.display.flip()
 
 # swipe between grids
@@ -182,18 +183,20 @@ while True:
 
     # process animations before accepting more user input
     if current != target :
-        if (current > target and current + velocity < target) or (current < target and current + velocity < target) :
+        pygame.event.clear()
+        print(f'animating from {current} to {target} with {velocity}')
+        current += velocity
+
+        if ((velocity > 0 and current >= target) or (velocity < 0 and current <= target)):
             current = target
-        else :
-            current += velocity
-        
-        if current == target :
+            swipe_set(grids, active)
             grids[active].draw(screen)
+            screen.convert()
         else :
-            area=pygame.Rect(WIDTH + current, 0, WIDTH, HEIGHT)
+            area=pygame.Rect(current, 0, WIDTH, HEIGHT)
             screen.blit(swipe_surface, (0,0), area)
+
         pygame.display.update()
-        pygame.event.pump()
         continue
 
     event = pygame.event.wait() # sleep until the user acts
@@ -231,33 +234,30 @@ while True:
         continue
 
     elif gesture == Gesture.SWIPE :
+        print(f'swipe travel {gestureDetection.travel}')
         area=pygame.Rect(WIDTH + gestureDetection.travel, 0, WIDTH, HEIGHT)
         screen.blit(swipe_surface, (0,0), area)
         pygame.display.update()
 
     elif gesture == Gesture.SWUP :
-        current = gestureDetection.travel
+        current = WIDTH + gestureDetection.travel
         velocity = gestureDetection.velocity
         
         if gestureDetection.travel <  -WIDTH / 2 :
-            # swipe left
+            # swipe right
+            print('swipe right')
             active = (active - 1) % len(grids)
-            swipe_set(grids, active)
             target = WIDTH * 0
         elif gestureDetection.travel > WIDTH / 2 :
-            # swipe right
+            # swipe left
+            print('swipe left')
             active = (active + 1) % len(grids)
-            swipe_set(grids, active)
             target = WIDTH * 2
         else :
             # back to center
+            print('back to center')
             velocity *= -1
             target = WIDTH * 1
-
-        #grids[active].draw(screen)
-        #pygame.display.update()
-
-
 
 timer.cancel()
 setBrightness(0.25)
